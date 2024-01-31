@@ -1,0 +1,252 @@
+drop database if exists covidDB;
+
+create database if not exists covidDB;
+
+use covidDB;
+
+create table Company(
+       name varchar(40) not null primary key,
+       street varchar(40),
+       city varchar(40),
+       province char(2),
+       postalCode char(6)
+);
+
+create table Vaccine(
+	lot char(6) not null primary key,
+	expiryDate date not null,
+	productionDate date not null,
+	doses integer,
+	producedBy varchar(40) not null,
+	foreign key (producedBy) references Company(name)
+);
+
+
+create table VaxClinic(
+	name varchar(40) not null primary key,
+       street varchar(40),
+       city varchar(40),
+       province char(2),
+       postalCode char(6)
+);
+
+Create table shipsTo(
+	lotNumber char(6) not null,
+	clinic char(40) not null,
+	primary key(lotNumber, clinic),
+	foreign key (lotNumber) references vaccine(lot) on delete cascade,
+	foreign key (clinic) references VaxClinic(name) on delete cascade
+);
+
+Create table Patient(
+	OHIP char(20) not null primary key,
+	firstName varchar(40) not null,
+	lastName varchar(40) not null,
+	dob date not null
+);
+
+Create table Spouse(
+       OHIP char(20) not null primary key,
+	firstName varchar(40) not null,
+	lastName varchar(40) not null,
+	phone char(10),
+	spouseOHIP char(20) not null,
+	foreign key (spouseOHIP) references Patient(OHIP) on delete cascade
+);
+
+Create table Nurse(
+	ID char(20) not null primary key,
+	firstName varchar(40) not null,
+	lastName varchar(40) not null
+);
+
+
+Create table practice(
+	name char(40) not null primary key,
+	phone char(10)
+);
+
+
+Create table doctor(
+       ID char(20) not null primary key,
+	firstName varchar(40) not null,
+	lastName varchar(40) not null,
+	practiceName char(40),
+	foreign key (practiceName) references practice(name) on delete set null
+);
+
+Create table nurseCredentials(
+	ID char(20) not null,
+	Cred char(4) not null,
+	Primary key(ID, Cred),
+	Foreign key (ID) references Nurse(id) on delete cascade
+);
+
+Create table drCredentials(
+	ID char(20) not null,
+	Cred char(4) not null,
+	Primary key(ID, Cred),
+	Foreign key (ID) references Doctor(id) on delete cascade
+);
+
+
+
+Create table NurseWorksAt(
+	clinicName char(40) not null,
+	ID char(20) not null,
+	Primary key(clinicName, ID),
+	Foreign key (clinicName) references VaxClinic(name) on delete cascade,
+	Foreign key (ID) references Nurse(ID) on delete cascade
+);
+
+Create table DrWorksAt(
+	clinicName char(40) not null,
+	ID char(20) not null,
+	Primary key(clinicName, ID),
+	Foreign key (clinicName) references VaxClinic(name) on delete cascade,
+	Foreign key (ID) references Doctor(ID) on delete cascade
+);
+
+Create table Vaccination(
+	patientOHIP char(20) not null,
+	vaxClinic char(40) not null,
+	vaccineLot char(6) not null,
+	date datetime not null,
+	primary key(patientOHIP, vaxClinic, vaccineLot),
+	foreign key (patientOHIP) references Patient(OHIP) on delete restrict,
+	foreign key (vaxClinic) references vaxClinic(name) on delete restrict,
+	foreign key (vaccineLot) references vaccine(lot) on delete restrict
+);
+
+insert into Company values
+('Pfizer', 'Needle Ave.', 'Newmarket', 'ON', 'L4G6J8'),
+('Moderna', 'Vaccine St.', 'Barrie', 'ON', 'B7J9U5'),
+('Astrazeneca', 'GetBetter St.', 'Kingston', 'ON', 'K7K 0Q8'),
+('Johnson & Johnson', 'Sicky Ave.', 'Vancouver', 'BC', 'J7K 9T6')
+;
+
+insert into Vaccine values
+('123456', '2022-09-18', '2022-08-18', '20', 'Pfizer'),
+('112233', '2022-10-19', '2022-09-19', '20', 'Moderna'),
+('214365', '2022-07-02', '2022-06-02', '15','Moderna'),
+('908756', '2022-09-21', '2022-08-21', '10', 'Astrazeneca'),
+('327645', '2022-10-20', '2022-09-20', '10', 'Astrazeneca'),
+('908712', '2022-11-14', '2022-10-14', '10', 'Johnson & Johnson')
+('555555', '2022-09-18', '2022-08-18', '20', 'Pfizer'),
+('731458', '2022-10-19', '2022-09-19', '20', 'Moderna'),
+('394730', '2022-07-02', '2022-06-02', '15','Moderna'),
+('109876', '2022-09-21', '2022-08-21', '10', 'Pfizer'),
+('324531', '2022-10-20', '2022-09-20', '10', 'Astrazeneca'),
+('111155', '2022-11-14', '2022-10-14', '10', 'Johnson & Johnson')
+;
+
+
+insert into VaxClinic values
+('Stick and Poke', 'Bonk Ave.', 'Bink', 'AB', 'A7D3H6'),
+('Blep Clinic', 'Boop St.', 'Meow', 'ON', 'LJ87H6'),
+('Sanitation Station', 'Jussy Blvd.', 'Jarvis', 'QC', 'J3D8Y7'),
+('Leans Vaccine', 'Lussy Rd.', 'Carti', 'QC', 'P9I8U7'),
+('Ouch!', 'Pain Lane', 'Montreal', 'QC', 'M3M4J6'),
+('I Luv Science', 'Yass Ave.', 'Laval', 'QC', 'N3D9Y4')
+;
+
+insert into shipsTo values
+('123456', 'Leans Vaccine'),
+('112233', 'Blep Clinic'),
+('214365', 'Ouch!'),
+('908756', 'I Luv Science'),
+('327645', 'Stick and Poke'),
+('908712', 'Leans Vaccine')
+('555555', 'Blep Clinic'),
+('731458', 'Stick and Poke'),
+('394730', 'I Luv Science'),
+('109876', 'Ouch!'),
+('324531', 'Blep Clinic'),
+('111155', 'Stick and Poke')
+;
+
+insert into Patient values
+('1234567890', 'Beth', 'Reid', '2001-05-11'),
+('9087564312', 'Liza', 'Maliukova', '2001-08-06'),
+('9746312354', 'Ben', 'van Eeden', '2001-09-05'),
+('9087908734', 'Alex', 'Mattison', '2001-08-03'),
+('8778655643', 'Bella', 'Swan', '1997-08-18'),
+('1221346543', 'Harry', 'Potter', '2000-09-07')
+;
+
+insert into Spouse values
+('4576239812','Sam','Silly','4167893489', '1234567890'),
+('1243568790','Beep','Boop','4167895689', '9087564312'),
+('5476983254','David','Cuttler','4163095689', '9746312354'),
+('1642768590','Konk','Bonk','6477005689', '9087908734'),
+('2601234576','Stinky','Lamo','2897895556', '8778655643'),
+('8225544466','Ginny','Potter','9058764089','8778655643');
+
+
+insert into Nurse values
+('000001', 'Meridith', 'Grey'),
+('000002', 'Christina', 'Yang'),
+('000005', 'Alex', 'Kerriv'),
+('000019', 'Mark', 'Sloan'),
+('000020', 'Derrik', 'Something'),
+('000300', 'Sonic', 'TheHeghog')
+;
+
+insert into practice values
+('FeelGood', '2895006677'),
+('Meep Clinic', '4167869034'),
+('Dr Nice Clinic', '9056789432')
+;
+
+insert into doctor values
+('121212', 'Arthur', 'Camelot', 'FeelGood'),
+('444555', 'Major', 'Monogram', 'Meep Clinic'),
+('987111', 'Perry', 'Platypus', 'Dr Nice Clinic')
+;
+
+insert into nurseCredentials values
+('000001', 'RN'),
+('000300', 'RN'),
+('000002', 'RN'),
+('000005', 'RN'),
+('000019', 'RN'),
+('000020', 'RN')
+;
+
+insert into drCredentials values
+('121212', 'MD'),
+('444555', 'MD'),
+('987111', 'MD')
+;
+
+
+insert into NurseWorksAt values
+('Stick and Poke', '000001'),
+('Ouch!', '000300'),
+('I Luv Science', '000020')
+;
+
+insert into DrWorksAt values
+('Leans Vaccine', '121212'),
+('I Luv Science', '444555'),
+('Sanitation Station', '987111')
+;
+
+insert into Vaccination values
+('1234567890','Leans Vaccine','123456','2022-10-15'),
+('9746312354','Sanitation Station','123456','2022-10-15'),
+('8778655643','I Luv Science','123456','2022-10-15'),
+('9087908734','Ouch!','908756','2022-10-15'),
+('1221346543','Blep Clinic','908756','2022-10-15'),
+('9087564312','Leans Vaccine','327645','2022-10-15')
+;
+
+
+
+
+
+
+	
+	
+
+
